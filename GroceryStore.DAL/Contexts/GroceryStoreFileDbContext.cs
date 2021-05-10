@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System.IO;
 using System.Threading;
-using System.Dynamic;
 using GroceryStore.DAL.Models;
 using GroceryStore.DAL.Attributes;
 using System.Reflection;
@@ -66,7 +65,7 @@ namespace GroceryStore.DAL.Contexts
             var tableName = ((TableNameAttribute)typeof(T).GetCustomAttributes(typeof(TableNameAttribute), true)?.FirstOrDefault())?.TableName;
             if(String.IsNullOrEmpty(tableName))
             {
-                throw new Exception($"Could not find table for class {typeof(T).Name}");
+                throw new Exception($"Could not find table name for class {typeof(T).Name}");
             }
             var database = await GetDatabase(cancellationToken);
             var table = (IEnumerable<T>)typeof(GroceryStoreDatabase).GetProperty(tableName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance).GetValue(database);
@@ -78,7 +77,7 @@ namespace GroceryStore.DAL.Contexts
             var tableName = ((TableNameAttribute)typeof(T).GetCustomAttributes(typeof(TableNameAttribute), true)?.FirstOrDefault())?.TableName;
             if (String.IsNullOrEmpty(tableName))
             {
-                throw new Exception($"Could not find table for class {typeof(T).Name}");
+                throw new Exception($"Could not find table name for class {typeof(T).Name}");
             }
             var database = await GetDatabase(cancellationToken);
             typeof(GroceryStoreDatabase).GetProperty(tableName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance).SetValue(database, entities);
