@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GroceryStore.BLL", "Grocery
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GroceryStore.DAL", "GroceryStore.DAL\GroceryStore.DAL.csproj", "{8B06EF08-F48F-4689-AA29-12CEF662A906}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GroceryStore.Core", "GroceryStore.Core\GroceryStore.Core.csproj", "{473248EA-F5D8-42D3-BEEA-6D039A32BB86}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GroceryStore.Common", "GroceryStore.Core\GroceryStore.Common.csproj", "{473248EA-F5D8-42D3-BEEA-6D039A32BB86}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,16 +1,15 @@
+using AutoMapper;
+using GroceryStore.BLL.IoC;
+using GroceryStore.Common.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Reflection;
 
 namespace GroceryStore.API
 {
@@ -23,9 +22,20 @@ namespace GroceryStore.API
 
         public IConfiguration Configuration { get; }
 
+        public GroceryStoreConfiguration GroceryStoreConfiguration { get; set; }
+
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var groceryStoreConfiguration = new GroceryStoreConfiguration();
+            Configuration.GetSection("GroceryStore").Bind(groceryStoreConfiguration);
+            GroceryStoreConfiguration = groceryStoreConfiguration;
+
+            services.AddSingleton<GroceryStoreConfiguration>(x => groceryStoreConfiguration);
+
+            // automapper
+            services.AddScoped<IMapper>(x => ConfigureAutomapper().CreateMapper());
+            services.ConfigureGroceryStoreBLL();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
@@ -53,6 +63,27 @@ namespace GroceryStore.API
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+            });
+        }
+
+        private MapperConfiguration ConfigureAutomapper()
+        {
+            var assembliesToScan = AppDomain.CurrentDomain.GetAssemblies();
+            var allTypes = assembliesToScan.Where(a => !a.IsDynamic).SelectMany(a => a.ExportedTypes).ToArray();
+
+            var profiles =
+                allTypes
+                    .Where(t => typeof(Profile).GetTypeInfo().IsAssignableFrom(t.GetTypeInfo()))
+                    .Where(t => !t.GetTypeInfo().IsAbstract);
+
+
+
+            return new MapperConfiguration(cfg =>
+            {
+                foreach (var profile in profiles)
+                {
+                    cfg.AddProfile(profile);
+                }
             });
         }
     }

@@ -1,31 +1,38 @@
-﻿using GroceryStore.DAL.Models;
-using System;
+﻿using GroceryStore.DAL.Contexts;
+using GroceryStore.DAL.Interfaces;
+using GroceryStore.DAL.Models;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GroceryStore.DAL.Repositories
 {
-    public class GroceryStoryRepository<T> where T: BaseEntity
+    public class GroceryStoryRepository<T> : IGroceryStoreRepository<T> where T : BaseEntity
     {
-        public async Task<T> GetById(int id) 
+        private readonly IGroceryStoreDbContext _dbContext;
+        public GroceryStoryRepository (IGroceryStoreDbContext dbContext)
         {
+            _dbContext = dbContext;
         }
 
-        public async Task<IEnumerable<T>> GetAll()
+        public async Task<T> GetById(int id, CancellationToken cancellationToken = default) 
         {
-
+            return await _dbContext.GetById<T>(id, cancellationToken);
         }
 
-        public async Task<int> Create(T entity)
+        public async Task<IEnumerable<T>> GetAll(CancellationToken cancellationToken = default)
         {
-
-        }
-        public async Task Update(T entity)
-        {
-
+            return await _dbContext.GetAll<T>(cancellationToken);
         }
 
+        public async Task<T> Add(T entity, CancellationToken cancellationToken = default)
+        {
+            return await _dbContext.Add(entity, cancellationToken);
+        }
+
+        public async Task Update(T entity, CancellationToken cancellationToken = default)
+        {
+            await _dbContext.Update(entity, cancellationToken);
+        }
     }
 }
