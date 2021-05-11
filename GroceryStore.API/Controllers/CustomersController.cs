@@ -3,7 +3,6 @@ using GroceryStore.API.Models;
 using GroceryStore.BLL.DTOs;
 using GroceryStore.BLL.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,22 +22,44 @@ namespace GroceryStore.API.Controllers
             _mapper = mapper;
         }
 
+        /// <summary>
+        /// Endpoint to get all customers of the grocery store
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns>All customers of the grocery store</returns>
         [HttpGet("")]
         [ProducesResponseType(typeof(IEnumerable<CustomerDTO>), 200)]
         public async Task<IActionResult> Get(CancellationToken cancellationToken = default)
         {
             var customers = await _customersService.GetAll(cancellationToken);
-            return Json(customers);
+            return Ok(customers);
         }
 
+        /// <summary>
+        /// Endpoint to get customer by id
+        /// </summary>
+        /// <param name="customerId">Customers Id</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>Customer if found, or Not Found response</returns>
         [HttpGet("{customerId}")]
         [ProducesResponseType(typeof(CustomerDTO), 200)]
+        [ProducesResponseType(404)]
         public async Task<IActionResult> Get(int customerId, CancellationToken cancellationToken = default)
         {
             var customer = await _customersService.GetById(customerId, cancellationToken);
-            return Json(customer);
+            if (customer == null)
+            {
+                return NotFound();
+            }
+            return Ok(customer);
         }
 
+        /// <summary>
+        /// Endpoint to add a customer to the grocery store
+        /// </summary>
+        /// <param name="addCustomerRequest">New customers info</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>201 response with new customer's info</returns>
         [HttpPost("")]
         [ProducesResponseType(typeof(CustomerDTO), 201)]
         public async Task<IActionResult> Post(AddCustomerRequest addCustomerRequest, CancellationToken cancellationToken = default)
@@ -48,6 +69,13 @@ namespace GroceryStore.API.Controllers
             return CreatedAtAction(nameof(Get), new { customerId = customer.Id }, customer);
         }
 
+        /// <summary>
+        /// Endpoint to update a customer
+        /// </summary>
+        /// <param name="customerId">Customer to update's Id</param>
+        /// <param name="customerDto">Updated customer info</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>204 response, or 400 if Ids don't match</returns>
         [HttpPut("{customerId}")]
         [ProducesResponseType(204)]
         public async Task<IActionResult> Put(int customerId, CustomerDTO customerDto, CancellationToken cancellationToken = default)

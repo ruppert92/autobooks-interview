@@ -1,15 +1,14 @@
 using AutoMapper;
+using GroceryStore.API.Middleware;
 using GroceryStore.BLL.IoC;
 using GroceryStore.Common.Configuration;
+using GroceryStore.Common.Helpers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using System;
-using System.Linq;
-using System.Reflection;
 
 namespace GroceryStore.API
 {
@@ -34,10 +33,10 @@ namespace GroceryStore.API
             services.AddSingleton<GroceryStoreConfiguration>(x => groceryStoreConfiguration);
 
             // automapper
-            services.AddScoped<IMapper>(x => ConfigureAutomapper().CreateMapper());
+            services.AddScoped<IMapper>(x => AutoMapperHelper.ConfigureAutomapper().CreateMapper());
             services.ConfigureGroceryStoreBLL();
 
-            services.AddControllers();
+            services.AddControllers(configure => configure.Filters.Add(typeof(ExceptionInterceptor)));
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "GroceryStore.API", Version = "v1" });
@@ -63,27 +62,6 @@ namespace GroceryStore.API
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-            });
-        }
-
-        private MapperConfiguration ConfigureAutomapper()
-        {
-            var assembliesToScan = AppDomain.CurrentDomain.GetAssemblies();
-            var allTypes = assembliesToScan.Where(a => !a.IsDynamic).SelectMany(a => a.ExportedTypes).ToArray();
-
-            var profiles =
-                allTypes
-                    .Where(t => typeof(Profile).GetTypeInfo().IsAssignableFrom(t.GetTypeInfo()))
-                    .Where(t => !t.GetTypeInfo().IsAbstract);
-
-
-
-            return new MapperConfiguration(cfg =>
-            {
-                foreach (var profile in profiles)
-                {
-                    cfg.AddProfile(profile);
-                }
             });
         }
     }
